@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { customFetch } from '../utils/axios';
 import { useNavigate } from 'react-router-dom';
+import { AiOutlineUpload } from 'react-icons/ai';
+import { ReactSortable } from 'react-sortablejs';
+import Spinner from './Spinner';
 
 export default function ProductForm({
     _id,
@@ -9,33 +12,30 @@ export default function ProductForm({
     images: existingImages,
     description: existingDescription,
     category: existingCategory,
+    company: existingCompany,
     featured: existingFeatured,
 }) {
-    const [values, setValues] = useState({
-        name: existingName || '',
-        price: existingPrice || '',
-        description: existingDescription || '',
-        category: existingCategory || 'office',
-        company: 'ikea',
-        featured: existingFeatured || false,
-        images: existingImages || [],
-        categories: ['office', 'kitchen', 'bedroom'],
-        companies: ['ikea', 'liddy', 'marcos'],
-    });
+    const [name, setName] = useState(existingName || '');
+    const [price, setPrice] = useState(existingPrice || '');
+    const [images, setImages] = useState(existingImages || []);
+    const [description, setDescription] = useState(existingDescription || '');
+    const [category, setCategory] = useState(existingCategory || 'office');
+    const [company, setCompany] = useState(existingCompany || 'ikea');
+    const [featured, setFeatured] = useState(existingFeatured || false);
+    const [categories, setCategories] = useState([
+        'office',
+        'kitchen',
+        'bedroom',
+    ]);
+    const [companies, setCompanies] = useState([
+        'ikea',
+        'liddy',
+        'marcos',
+        'caressa',
+    ]);
     const [goToProduct, setGoToProduct] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const navigate = useNavigate();
-
-    const {
-        name,
-        price,
-        description,
-        category,
-        company,
-        featured,
-        images,
-        categories,
-        companies,
-    } = values;
 
     async function saveProduct(e) {
         e.preventDefault();
@@ -51,6 +51,7 @@ export default function ProductForm({
         if (_id) {
             await customFetch.patch(`/products/${_id}`, { ...data, _id });
         } else {
+            console.log(data);
             await customFetch.post('/products', data);
         }
         setGoToProduct(true);
@@ -60,28 +61,71 @@ export default function ProductForm({
         navigate('/products');
     }
 
-    function handleChange(e) {
-        let name = e.target.name;
-        let value = e.target.value;
-        if (name === 'price') {
-            value = parseInt(e.target.value);
+    async function uploadImages(e) {
+        const files = e.target?.files;
+        if (files?.length > 0) {
+            setIsUploading(true);
+            const data = new FormData();
+            for (const file of files) {
+                data.append('file', file);
+            }
+            const resp = await customFetch.post('/upload', data);
+            setImages((oldImages) => {
+                return [...oldImages, ...resp.data.links];
+            });
+            setIsUploading(false);
         }
-        if (name === 'featured') {
-            value = e.target.checked;
-        }
-        setValues({ ...values, [name]: value });
+    }
+    function uploadImagesOrder(images) {
+        setImages(images);
     }
 
     return (
         <form className="w-full" onSubmit={saveProduct}>
+            {/* Name */}
             <label>Name</label>
             <input
                 type="text"
                 placeholder="Name"
                 name="name"
                 value={name}
-                onChange={handleChange}
+                onChange={(e) => setName(e.target.value)}
             />
+
+            {/* Photo */}
+            <div className="mb-2 flex flex-wrap gap-1">
+                <ReactSortable
+                    list={images}
+                    className="flex flex-wrap gap-1"
+                    setList={uploadImagesOrder}
+                >
+                    {!!images?.length &&
+                        images.map((link) => (
+                            <div
+                                key={link}
+                                className="h-24 bg-white p-4 shadow-sm rounded-sm border border-gray-200"
+                            >
+                                <img src={link} className="rounded-lg" />
+                            </div>
+                        ))}
+                </ReactSortable>
+                {isUploading && (
+                    <div className="h-24 flex items-center">
+                        <Spinner />
+                    </div>
+                )}
+
+                <label className="w-24 h-24 cursor-pointer border text-center flex flex-col items-center justify-center text-sm gap-1 text-primary rounded-sm bg-white shadow-sm border-primary">
+                    <AiOutlineUpload />
+                    <div>Upload</div>
+                    <input
+                        type="file"
+                        multiple
+                        className="hidden"
+                        onChange={uploadImages}
+                    />
+                </label>
+            </div>
 
             {/* Price */}
             <label>Price (USD)</label>
@@ -90,7 +134,7 @@ export default function ProductForm({
                 placeholder="Price"
                 name="price"
                 value={price}
-                onChange={handleChange}
+                onChange={(e) => setPrice(parseInt(e.target.value))}
             />
 
             {/* Description */}
@@ -99,12 +143,15 @@ export default function ProductForm({
                 placeholder="Description"
                 name="description"
                 value={description}
-                onChange={handleChange}
+                onChange={(e) => setDescription(e.target.value)}
             />
 
             {/* Category */}
             <label>Category</label>
-            <select name="category" onChange={handleChange}>
+            <select
+                name="category"
+                onChange={(e) => setCategory(e.target.value)}
+            >
                 {categories.map((category, i) => (
                     <option key={i} value={category}>
                         {category}
@@ -114,7 +161,7 @@ export default function ProductForm({
 
             {/* Company */}
             <label>Company</label>
-            <select name="company" onChange={handleChange}>
+            <select name="company" onChange={(e) => setCompany(e.target.value)}>
                 {companies.map((company, i) => (
                     <option key={i} value={company}>
                         {company}
@@ -128,7 +175,7 @@ export default function ProductForm({
                     type="checkbox"
                     name="featured"
                     checked={featured}
-                    onChange={handleChange}
+                    onChange={(e) => setFeatured(e.target.checked)}
                     className="m-0 w-4 h-4"
                 />
                 <label>Featured product</label>
