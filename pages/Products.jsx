@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { customFetch } from '../utils/axios';
 import Spinner from '../components/Spinner';
 import Swal from 'sweetalert2';
+import formatPrice from '../utils/formatPrice';
 
 export default function ProductsPage() {
     const [products, setProducts] = useState([]);
@@ -52,6 +53,7 @@ export default function ProductsPage() {
                     <thead>
                         <tr>
                             <td>id</td>
+                            <td>images</td>
                             <td>name</td>
                             <td>price</td>
                             <td>category</td>
@@ -64,8 +66,14 @@ export default function ProductsPage() {
                             products.map((p, i) => (
                                 <tr key={i}>
                                     <td>{i + 1}</td>
+                                    <td>
+                                        <img
+                                            src={p.images[0]}
+                                            className="w-8 h-8"
+                                        />
+                                    </td>
                                     <td>{p.name}</td>
-                                    <td>{p.price}</td>
+                                    <td>{formatPrice(p.price)}</td>
                                     <td>{p.category}</td>
                                     <td>{p.company}</td>
                                     <td>
