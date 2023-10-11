@@ -14,6 +14,7 @@ export default function ProductForm({
     category: existingCategory,
     company: existingCompany,
     featured: existingFeatured,
+    stock: existingStock,
 }) {
     const [name, setName] = useState(existingName || '');
     const [price, setPrice] = useState(existingPrice || '');
@@ -22,6 +23,7 @@ export default function ProductForm({
     const [category, setCategory] = useState(existingCategory || 'office');
     const [company, setCompany] = useState(existingCompany || 'ikea');
     const [featured, setFeatured] = useState(existingFeatured || false);
+    const [stock, setStock] = useState(existingStock || 0);
     const [categories, setCategories] = useState([
         'office',
         'kitchen',
@@ -47,11 +49,11 @@ export default function ProductForm({
             category,
             company,
             featured,
+            stock,
         };
         if (_id) {
             await customFetch.patch(`/products/${_id}`, { ...data, _id });
         } else {
-            console.log(data);
             await customFetch.post('/products', data);
         }
         setGoToProduct(true);
@@ -168,6 +170,16 @@ export default function ProductForm({
                     </option>
                 ))}
             </select>
+
+            {/* Stock */}
+            <label>Stock</label>
+            <input
+                type="number"
+                placeholder="Stock"
+                name="stock"
+                value={stock}
+                onChange={(e) => setStock(parseInt(e.target.value))}
+            />
 
             {/* Featured */}
             <div className="flex items-center gap-2">
