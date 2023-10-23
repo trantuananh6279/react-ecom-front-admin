@@ -5,7 +5,6 @@ import Stats from '../pages/Stats';
 import ProductsPage from '../pages/Products';
 import OrdersPage from '../pages/Orders';
 import ErrorPage from '../pages/Error';
-import CategoriesPage from '../pages/Categories';
 import SettingsPage from '../pages/Settings';
 import ProtectedRoute from '../pages/ProtectedRoute';
 import { ToastContainer } from 'react-toastify';
@@ -13,6 +12,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import Layout from '../components/Layout';
 import AddProduct from '../pages/AddProduct';
 import EditProduct from '../pages/EditProduct';
+import CalendarPage from '../pages/Calendar';
+import NotificationPage from '../pages/Notifications';
 
 function App() {
     return (
@@ -31,7 +32,11 @@ function App() {
                     <Route path="products/new" element={<AddProduct />} />
                     <Route path="products/edit/:id" element={<EditProduct />} />
                     <Route path="orders" element={<OrdersPage />} />
-                    <Route path="categories" element={<CategoriesPage />} />
+                    <Route
+                        path="notifications"
+                        element={<NotificationPage />}
+                    />
+                    <Route path="calendars" element={<CalendarPage />} />
                     <Route path="settings" element={<SettingsPage />} />
                 </Route>
                 <Route path="login" element={<LoginPage />} />
